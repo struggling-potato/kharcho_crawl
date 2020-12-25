@@ -42,7 +42,6 @@ class Crawler:
                     str_words = re.split(r"\s", text_str.group(1))
                     final_words = []
                     for word in str_words:
-                        #final_word = re.match(r"\W*(([\wА-Яа-я]|(\b\W\b)+)+)", word)
                         final_word = re.match(r"\W*(([\wА-Яа-я\W]+(?<=[\wА-Яа-я])))\W*$", word)
                         if final_word:
                             final_words.append(final_word.group(1).lower())
@@ -112,14 +111,12 @@ class Crawler:
 
         print("Visited:", visited_urls)
 
-        #f = open("log.txt", "w")
         for cur_depth in range(self.depth):
             print("Visiting {} depth set(len={})".format(cur_depth + 1, len(cur_depth_set)))
             for url in cur_depth_set:
                 if url in visited_urls:
                     print("Skipping visited url {}".format(url))
                     continue
-                #print("Crawling", url)
                 crawled_count += 1
                 cur_time = datetime.datetime.now().time()
 
@@ -136,43 +133,20 @@ class Crawler:
                 if soup.title:
                     print("Title:", soup.title.text)
                     page_title = soup.title.text
-                #print(html)
-                #print(html_doc)
                 visited_urls.add(url)
-                page_text = self.plain_text(soup)
-                words_count = len(page_text)
-                #f.write("\n\nPage {}({})\n\n".format(url, page_title))
-                #for idx in range(words_count):
-                #    f.write("words count: {} {} word: {}\n".format(words_count, idx, page_text[idx]))
-                    #print("words count:", words_count, idx, "word:", page_text[idx])
 
+                page_text = self.plain_text(soup)
 
                 page_links = self.page_links(soup)
-                links_count = len(page_links)
 
                 for link in page_links:
                     url_set.add(link[0])
 
-                #for idx in range(links_count):
-                #    f.write("links count: {} {} link: {} link text: {}\n".format(links_count, idx, page_links[idx][0], page_links[idx][1]))
-
-
                 parsed_page = Parsed_page(url, page_text, page_links)
                 self.session_mgr.save_parsed_page(parsed_page)
-
-
 
             cur_depth_set = url_set.copy()
 
         print("Crawled", crawled_count)
-        #f.close()
 
         pass
-
-#def main():
-#    crawler = Crawler()
-#    crawler.crawl()
-#    pass
-
-#main()
-

@@ -6,7 +6,6 @@ class Session_mgr:
     database = Database()
     def __init__(self):
         print(self.__class__.__name__, "init")
-        #self.save_parsed_page(Parsed_page("url", ["word1", "word2"], [["url1",["word1", "word2", "word3"]]]))
 
         pass
 

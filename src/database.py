@@ -5,7 +5,7 @@ class Database:
     """Description"""
 
     def __init__(self):
-        self.connection = sqlite3.connect("webDB.db")
+        self.connection = sqlite3.connect("webIndexDB.db")
         #self.__drop_tables()
         curs = self.connection.cursor()
 
@@ -17,7 +17,6 @@ class Database:
             );
         """
 
-        #print(sql_create_word_list)
         curs.execute(sql_create_word_list)
 
         sql_create_url_list = """
@@ -27,7 +26,6 @@ class Database:
             );
         """
 
-        #print(sql_create_url_list)
         curs.execute(sql_create_url_list)
 
         sql_create_word_location = """
@@ -41,7 +39,6 @@ class Database:
             );
         """
 
-        #print(sql_create_word_location)
         curs.execute(sql_create_word_location)
 
         sql_create_link_url = """
@@ -54,7 +51,6 @@ class Database:
             );
         """
 
-        #print(sql_create_link_url)
         curs.execute(sql_create_link_url)
 
         sql_create_link_word = """
@@ -63,11 +59,10 @@ class Database:
                 fk_wordid INTEGER,
                 fk_linkid INTEGER,
                 FOREIGN KEY(fk_wordid) REFERENCES wordList(rowid),
-                FOREIGN KEY(fk_linkid) REFERENCES urlList(rowid)
+                FOREIGN KEY(fk_linkid) REFERENCES urlLink(rowid)
             );
         """
 
-        #print(sql_create_link_word)
         curs.execute(sql_create_link_word)
 
         self.connection.commit()
@@ -88,35 +83,30 @@ class Database:
             DROP TABLE wordList;
         """
 
-        #print(sql_drop_word_list)
         curs.execute(sql_drop_word_list)
 
         sql_drop_url_list = """
             DROP TABLE urlList;
         """
 
-        #print(sql_drop_url_list)
         curs.execute(sql_drop_url_list)
 
         sql_drop_word_location = """
             DROP TABLE wordLocation;
         """
 
-        #print(sql_drop_word_location)
         curs.execute(sql_drop_word_location)
 
         sql_drop_link_url = """
             DROP TABLE urlLink;
         """
 
-        #print(sql_drop_link_url)
         curs.execute(sql_drop_link_url)
 
         sql_drop_link_word = """
             DROP TABLE linkWord;
         """
 
-        #print(sql_drop_link_word)
         curs.execute(sql_drop_link_word)
 
         self.connection.commit()
@@ -135,7 +125,6 @@ class Database:
                     SELECT * FROM urlList WHERE url='{}'
                 );
             """.format(url, url)
-            #print(sql_insert_url)
             result = curs.execute(sql_insert_url)
 
         for idx in range(words_count):
@@ -150,8 +139,6 @@ class Database:
                 );
             """.format(word, word)
 
-            if url=="https://habr.com/ru/post/248611/" or url=="https://forums.drom.ru/":
-                print(sql_insert_word)
             result = curs.execute(sql_insert_word)
 
             sql_insert_word_location = """
@@ -165,7 +152,6 @@ class Database:
             """.format(idx,
                        url, word)
 
-            #print(sql_insert_word_location)
             result = curs.execute(sql_insert_word_location)
 
         self.connection.commit()
@@ -184,7 +170,6 @@ class Database:
                     SELECT * FROM urlList WHERE url='{}'
                 );
             """.format(url, url)
-            #print(sql_insert_url)
             result = curs.execute(sql_insert_url)
 
         for idx in range(links_count):
@@ -200,7 +185,6 @@ class Database:
                 );
             """.format(link_url, link_url)
 
-            #print(sql_insert_link_url)
             result = curs.execute(sql_insert_link_url)
 
             sql_insert_urls_link = """
@@ -213,7 +197,6 @@ class Database:
                     AND list1.url='{}' AND list2.url='{}';
             """.format(url, link_url)
 
-            #print(sql_insert_urls_link)
             result = curs.execute(sql_insert_urls_link)
 
             for word in link_words:
@@ -226,20 +209,18 @@ class Database:
                     );
                 """.format(word, word)
 
-                #print(sql_insert_word)
                 result = curs.execute(sql_insert_word)
 
                 sql_insert_link_word = """
                     INSERT INTO linkWord(fk_wordid, fk_linkid)
-                    SELECT wordList.rowid as wordid, urlList.rowid as linkid FROM wordList, urlList
+                    SELECT wordList.rowid as wordid, urlLink.rowid as linkid FROM wordList, urlLink
                         WHERE NOT EXISTS
                             (
                                 SELECT * FROM linkWord WHERE fk_wordid=wordid AND fk_linkid=linkid
                             )
-                        AND wordList.word='{}' AND urlList.url='{}';
-                """.format(word, link_url)
+                        AND wordList.word='{}' AND urlLink.fk_fromid=(SELECT rowid FROM urlList WHERE url='{}') AND urlLink.fk_toid=(SELECT rowid FROM urlList WHERE url='{}');
+                """.format(word, url, link_url)
 
-                #print(sql_insert_link_word)
                 result = curs.execute(sql_insert_link_word)
 
         self.connection.commit()
@@ -289,7 +270,6 @@ class Database:
             SELECT COUNT(*) FROM wordList;
         """
 
-        #print(sql_rows_count)
         curs.execute(sql_rows_count)
 
         count = curs.fetchone()
@@ -299,7 +279,6 @@ class Database:
             SELECT COUNT(*) FROM urlList;
         """
 
-        #print(sql_rows_count)
         curs.execute(sql_rows_count)
 
         count = curs.fetchone()
@@ -309,7 +288,6 @@ class Database:
             SELECT COUNT(*) FROM wordLocation;
         """
 
-        #print(sql_rows_count)
         curs.execute(sql_rows_count)
 
         count = curs.fetchone()
@@ -319,7 +297,6 @@ class Database:
             SELECT COUNT(*) FROM urlLink;
         """
 
-        #print(sql_rows_count)
         curs.execute(sql_rows_count)
 
         count = curs.fetchone()
@@ -329,7 +306,6 @@ class Database:
             SELECT COUNT(*) FROM linkWord;
         """
 
-        #print(sql_rows_count)
         curs.execute(sql_rows_count)
 
         count = curs.fetchone()
@@ -360,7 +336,6 @@ class Database:
             ORDER BY cnt DESC;
         """
 
-        #print(sql_words_sorted_by_count)
         curs.execute(sql_words_sorted_by_count)
 
         words = curs.fetchall()
